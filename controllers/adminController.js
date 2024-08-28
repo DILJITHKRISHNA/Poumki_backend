@@ -62,10 +62,11 @@ export const DeleteAllUsers = async (req, res) => {
     }
 }
 export const DeleteUserByid = async (req, res) => {
-
+    console.log("Hiiiddd");
+    
     try {
         const { id } = req.params
-        const deleteuser = await deleteUserById(id)
+        const deleteuser = await UserModel.findOneAndDelete({ _id: id })
         if (deleteuser) {
             return res.status(200).json({ success: true, message: "User Deleted successfully", deleteuser })
         } else {
