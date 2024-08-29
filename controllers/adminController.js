@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import env from 'dotenv'
 env.config()
 import { getUserByEmail, UserModel, getUsers, deleteUserById } from '../model/UserSchema.js'
+import { io } from '../index.js';
 
 
 export const AdminloginUser = async (req, res) => {
@@ -37,6 +38,7 @@ export const GetAllUsers = async (req, res) => {
         const Allusers = await UserModel.find({ isAdmin: false });
 
         if (Allusers) {
+            io.emit('updateUserList', Allusers);
             return res.status(200).json({ success: true, message: "All users fetched successfully", Allusers })
         } else {
             return res.json({ message: "No users found" })
@@ -52,6 +54,8 @@ export const DeleteAllUsers = async (req, res) => {
         const deleteAllusers = await UserModel.deleteMany({ isAdmin: false })
 
         if (deleteAllusers) {
+            const remainingUsers = await UserModel.find({ isAdmin: false });
+            io.emit('updateUserList', remainingUsers); 
             return res.status(200).json({ success: true, message: "All users Deleted successfully", deleteAllusers })
         } else {
             return res.json({ message: "Failed to delete users" })
@@ -68,6 +72,8 @@ export const DeleteUserByid = async (req, res) => {
         const { id } = req.params
         const deleteuser = await UserModel.findOneAndDelete({ _id: id })
         if (deleteuser) {
+            const remainingUsers = await UserModel.find({ isAdmin: false });
+            io.emit('updateUserList', remainingUsers); 
             return res.status(200).json({ success: true, message: "User Deleted successfully", deleteuser })
         } else {
             return res.json({ message: "Failed to delete user" })
